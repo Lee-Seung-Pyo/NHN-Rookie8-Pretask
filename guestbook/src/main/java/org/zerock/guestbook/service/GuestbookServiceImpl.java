@@ -1,5 +1,6 @@
 package org.zerock.guestbook.service;
 
+import com.fasterxml.jackson.databind.util.ArrayBuilders;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.data.domain.Page;
@@ -38,6 +39,8 @@ public class GuestbookServiceImpl implements GuestbookService {
     public PageResultDTO<GuestbookDTO, Guestbook> getList(PageRequestDTO requestDTO) {
         Pageable pageable = requestDTO.getPageable(Sort.by("gno").descending());
 
+        ArrayBuilders.BooleanBuilder booleanBuilder = getSearch(requestDTO);
+
         Page<Guestbook> result = repository.findAll(pageable);
 
         Function<Guestbook, GuestbookDTO> fn = (entity -> entityToDto(entity));
@@ -67,5 +70,39 @@ public class GuestbookServiceImpl implements GuestbookService {
 
             repository.save(entity);
         }
+    }
+
+    private ArrayBuilders.BooleanBuilder getSearch(PageRequestDTO requestDTO) {
+        String type = requestDTO.getType();
+
+        ArrayBuilders.BooleanBuilder booleanBuilder = new ArrayBuilders.BooleanBuilder();
+
+        QGuestbook qGuestbook = QGuestbook.guestbook;
+
+        String keyword = requestDTO.getKeyword();
+
+        BooleanExpression expression = qGuestbook.gno.gt(0L);
+
+        booleanBuilder.and(expression);
+
+        if(type == null || type.trim().length() == 0) {
+            return booleanBuilder;
+        }
+
+        ArrayBuilders.BooleanBuilder conditionBuilder = new ArrayBuilders.BooleanBuilder();
+
+        if(type.contains("t")) {
+            conditionBuilder.or(qGuestbook.title.contains(keyword));
+        }
+        if(type.contains("c")) {
+            conditionBuilder.or(qGuestbook.content.contains(keyword));
+        }
+        if(type.contains("w")) {
+            conditionBuilder.or(qGuestbook.writer.contains(keyword));
+        }
+
+        booleanBuilder.and(conditionBuilder);
+
+        return booleanBuilder;
     }
 }

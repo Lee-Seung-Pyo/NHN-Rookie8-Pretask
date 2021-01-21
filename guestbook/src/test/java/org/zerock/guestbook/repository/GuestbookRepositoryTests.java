@@ -1,10 +1,14 @@
 package org.zerock.guestbook.repository;
 
+import com.fasterxml.jackson.databind.util.ArrayBuilders;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.zerock.guestbook.entity.Guestbook;
 
+import java.awt.print.Pageable;
 import java.util.Optional;
 import java.util.stream.IntStream;
 
@@ -38,4 +42,5 @@ public class GuestbookRepositoryTests {
             guestbookRepository.save(guestbook);
         }
     }
+
 }
